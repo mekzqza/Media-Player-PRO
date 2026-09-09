@@ -2,6 +2,7 @@ import os
 import sys
 
 from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QIcon
 from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PyQt6.QtWidgets import (
     QApplication,
@@ -27,7 +28,13 @@ from PyQt6.QtWidgets import (
 import theme
 from playlist import Library, Playlist
 
-PLAYLISTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "playlists.json")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# ตอนเป็น .exe: ข้อมูลผู้ใช้เซฟข้างตัว exe (โฟลเดอร์ชั่วคราวโดนลบทุกครั้งที่ปิด)
+# ส่วนไฟล์แนบอย่างไอคอนอยู่ใน _MEIPASS ที่ PyInstaller แตกไว้ให้
+BASE_DIR = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else SCRIPT_DIR
+RES_DIR = getattr(sys, "_MEIPASS", SCRIPT_DIR)
+PLAYLISTS_FILE = os.path.join(BASE_DIR, "playlists.json")
+ICON_FILE = os.path.join(RES_DIR, "assets", "app-c.ico")
 CARDS_PER_ROW = 3
 
 
@@ -476,6 +483,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(ICON_FILE))
     app.setStyleSheet(theme.stylesheet())
     window = MainWindow()
     window.show()
