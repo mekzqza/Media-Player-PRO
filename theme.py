@@ -33,6 +33,11 @@ ICONS = {
     "stop": chr(0xE71A),
     "next": chr(0xE893),
     "volume": chr(0xE767),
+    "edit": chr(0xE70F),
+    "add": chr(0xE710),
+    "search": chr(0xE721),
+    "songs": chr(0xE8FD),
+    "delete": chr(0xE74D),
 }
 
 # ponytail: string.Template เพราะ QSS เต็มไปด้วย {} ถ้าใช้ .format จะพังทันที
@@ -170,6 +175,93 @@ QPushButton#Transport, QPushButton#PlayButton {
 }
 QPushButton#Transport:hover, QPushButton#PlayButton:hover { color: $accent_hover; }
 QPushButton#PlayButton { color: $accent; font-size: 21px; }
+
+/* ---------- หน้า Library ---------- */
+QLineEdit#Search {
+    background: $panel;
+    border: 1px solid $panel_border;
+    border-radius: 19px;
+    padding: 9px 16px;
+    font-size: 14px;
+}
+QLineEdit#Search:focus { border-color: $accent; }
+
+QLabel#SearchIcon {
+    font-family: "$icon_font";
+    font-size: 15px;
+    color: $on_accent;
+    background: $accent_dark;
+    border-radius: 17px;
+    min-width: 34px;
+    max-width: 34px;
+    min-height: 34px;
+    max-height: 34px;
+}
+
+QScrollArea, QScrollArea > QWidget > QWidget { background: transparent; border: none; }
+
+QFrame#Card {
+    background: $panel;
+    border: 1px solid $panel_border;
+    border-radius: $radius;
+}
+QFrame#Card:hover { border: 1px solid $accent; }
+
+QLabel#CardName {
+    font-size: 14px;
+    font-weight: 600;
+    background: transparent;
+}
+QLabel#CardCount {
+    color: $text_muted;
+    font-size: 12px;
+    font-family: "$icon_font";
+    background: transparent;
+}
+QLabel#Empty {
+    color: $text_muted;
+    font-size: 14px;
+    background: transparent;
+}
+
+QPushButton#CardIcon {
+    background: transparent;
+    border: none;
+    font-family: "$icon_font";
+    font-size: 14px;
+    min-width: 24px;
+    padding: 2px;
+}
+QPushButton#CardIcon:hover { color: $accent; }
+QPushButton#CardPlay {
+    background: transparent;
+    border: none;
+    font-family: "$icon_font";
+    font-size: 18px;
+    color: $accent;
+    min-width: 26px;
+    padding: 2px;
+}
+QPushButton#CardPlay:hover { color: $accent_hover; }
+
+/* ---------- หน้าต่างแก้ไขเพลย์ลิสต์ ---------- */
+QDialog { background: $window; }
+QLineEdit {
+    background: $panel;
+    border: 1px solid $panel_border;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+}
+QLineEdit:focus { border-color: $accent; }
+QPushButton#Danger {
+    background: transparent;
+    border: 1px solid $accent;
+    color: $accent;
+    border-radius: 6px;
+    padding: 8px 14px;
+}
+QPushButton#Danger:hover { background: $accent; color: $on_accent; }
 """)
 
 
