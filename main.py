@@ -13,11 +13,17 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSlider,
     QVBoxLayout,
     QWidget,
 )
 
 from playlist import Playlist
+
+
+def _fmt(ms):
+    seconds = max(0, ms) // 1000
+    return f"{seconds // 60}:{seconds % 60:02d}"
 
 
 class MainWindow(QMainWindow):
@@ -48,6 +54,17 @@ class MainWindow(QMainWindow):
         top.addWidget(self.list_widget, 2)
         top.addWidget(self.now_playing, 1)
 
+        self.progress = QSlider(Qt.Orientation.Horizontal)
+        self.progress.sliderMoved.connect(self.player.setPosition)  # sliderMoved = ผู้ใช้ลากเท่านั้น
+        self.player.durationChanged.connect(self.on_duration_changed)
+        self.player.positionChanged.connect(self.on_position_changed)
+
+        self.time_label = QLabel("0:00 / 0:00")
+
+        progress_row = QHBoxLayout()
+        progress_row.addWidget(self.progress)
+        progress_row.addWidget(self.time_label)
+
         buttons = QHBoxLayout()
         for text, slot in (
             ("Add Songs", self.on_add_songs),
@@ -59,8 +76,18 @@ class MainWindow(QMainWindow):
             button.clicked.connect(slot)
             buttons.addWidget(button)
 
+        buttons.addStretch()
+        buttons.addWidget(QLabel("Volume"))
+        self.volume_slider = QSlider(Qt.Orientation.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(50)
+        self.volume_slider.setFixedWidth(120)
+        self.volume_slider.valueChanged.connect(self.on_volume_changed)
+        buttons.addWidget(self.volume_slider)
+
         root = QVBoxLayout()
         root.addLayout(top)
+        root.addLayout(progress_row)
         root.addLayout(buttons)
 
         central = QWidget()
@@ -92,6 +119,22 @@ class MainWindow(QMainWindow):
             return  # เล่นอยู่แล้ว ไม่ต้องเริ่มใหม่
 
         self._play_index(self.playlist.current if self.playlist.current >= 0 else 0)
+
+    def on_duration_changed(self, duration):
+        self.progress.setRange(0, duration)
+        self._update_time()
+
+    def on_position_changed(self, position):
+        if not self.progress.isSliderDown():  # ตอนผู้ใช้ลากอยู่ ห้ามเขียนทับ ไม่งั้นสไลเดอร์กระตุก
+            self.progress.setValue(position)
+        self._update_time()
+
+    def _update_time(self):
+        self.time_label.setText(f"{_fmt(self.player.position())} / {_fmt(self.player.duration())}")
+
+    def on_volume_changed(self, value):
+        # ponytail: linear พอสำหรับตอนนี้ อยากได้สเกลตามหูค่อยใช้ QtAudio.convertVolume
+        self.audio_output.setVolume(value / 100)
 
     def on_pause(self):
         self.player.pause()
