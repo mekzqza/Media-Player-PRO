@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
 
     def _build_ui(self):
         # ---------- แถบบน ----------
-        self.home_button = QPushButton("⌂")
+        self.home_button = QPushButton(theme.ICONS["home"])
         self.home_button.setObjectName("IconButton")
         self.home_button.setEnabled(False)
         self.home_button.setToolTip("หน้า Library — ยังไม่ได้ทำ")
@@ -100,21 +100,21 @@ class MainWindow(QMainWindow):
         transport = QHBoxLayout()
         transport.addSpacing(160)  # ponytail: ถ่วงซ้ายให้ปุ่มอยู่กลางจริง เพราะขวามี volume กินที่
         transport.addStretch()
-        for glyph, tooltip, slot, name in (
-            ("◀◀", "เพลงก่อนหน้า", self.on_prev, "Transport"),
-            ("▶", "เล่น", self.on_play, "PlayButton"),
-            ("❚❚", "หยุดชั่วคราว", self.on_pause, "Transport"),
-            ("■", "หยุด", self.on_stop, "Transport"),
-            ("▶▶", "เพลงถัดไป", self.on_next, "Transport"),
+        for icon, tooltip, slot, name in (
+            ("prev", "เพลงก่อนหน้า", self.on_prev, "Transport"),
+            ("play", "เล่น", self.on_play, "PlayButton"),
+            ("pause", "หยุดชั่วคราว", self.on_pause, "Transport"),
+            ("stop", "หยุด", self.on_stop, "Transport"),
+            ("next", "เพลงถัดไป", self.on_next, "Transport"),
         ):
-            button = QPushButton(glyph)
+            button = QPushButton(theme.ICONS[icon])
             button.setObjectName(name)
             button.setToolTip(tooltip)
             button.clicked.connect(slot)
             transport.addWidget(button)
         transport.addStretch()
 
-        volume_icon = QLabel(chr(0xE767))  # ไอคอนลำโพง Segoe MDL2 Assets
+        volume_icon = QLabel(theme.ICONS["volume"])
         volume_icon.setObjectName("VolumeIcon")
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
         self.volume_slider.setObjectName("Volume")

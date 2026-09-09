@@ -20,8 +20,20 @@ COLORS = {
 }
 
 FONT = "Segoe UI"
-ICON_FONT = "Segoe MDL2 Assets"  # ฟอนต์ไอคอนที่ติดมากับ Windows — ใช้กับไอคอนลำโพง
+ICON_FONT = "Segoe MDL2 Assets"  # ฟอนต์ไอคอนที่ติดมากับ Windows ทุกเครื่อง
 RADIUS = "10px"
+
+# อยากได้ไอคอนอื่นเพิ่ม: เปิด charmap.exe เลือกฟอนต์ Segoe MDL2 Assets
+# หรือเสิร์ช "Segoe MDL2 Assets icon list" แล้วเอารหัส U+Exxx มาใส่เป็น chr(0xExxx)
+ICONS = {
+    "home": chr(0xE80F),
+    "prev": chr(0xE892),
+    "play": chr(0xF5B0),   # PlaySolid — ปุ่มหลัก เอาแบบทึบให้เด่น
+    "pause": chr(0xE769),
+    "stop": chr(0xE71A),
+    "next": chr(0xE893),
+    "volume": chr(0xE767),
+}
 
 # ponytail: string.Template เพราะ QSS เต็มไปด้วย {} ถ้าใช้ .format จะพังทันที
 _QSS = Template("""
@@ -137,7 +149,8 @@ QPushButton#IconButton {
     background: $panel;
     border: 2px solid $text;
     border-radius: 10px;
-    font-size: 17px;
+    font-family: "$icon_font";
+    font-size: 15px;
     min-width: 36px;
     min-height: 32px;
     padding: 0;
@@ -152,7 +165,8 @@ QPushButton#Transport, QPushButton#PlayButton {
     border: none;
     min-width: 46px;
     padding: 6px;
-    font-size: 15px;
+    font-family: "$icon_font";
+    font-size: 16px;
 }
 QPushButton#Transport:hover, QPushButton#PlayButton:hover { color: $accent_hover; }
 QPushButton#PlayButton { color: $accent; font-size: 21px; }
