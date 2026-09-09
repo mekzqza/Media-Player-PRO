@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+import theme
 from playlist import Playlist
 
 
@@ -30,7 +31,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Media Player PRO")
-        self.resize(800, 500)
+        self.resize(940, 580)
+        self.setMinimumSize(720, 460)
 
         self.playlist = Playlist()
         self.player = QMediaPlayer()
@@ -43,52 +45,94 @@ class MainWindow(QMainWindow):
         self._build_ui()
 
     def _build_ui(self):
+        # ---------- แถบบน ----------
+        self.home_button = QPushButton("⌂")
+        self.home_button.setObjectName("IconButton")
+        self.home_button.setEnabled(False)
+        self.home_button.setToolTip("หน้า Library — ยังไม่ได้ทำ")
+
+        title = QLabel("Media Player PRO")
+        title.setObjectName("Title")
+
+        self.add_button = QPushButton("+  Add Songs")
+        self.add_button.setObjectName("AddButton")
+        self.add_button.clicked.connect(self.on_add_songs)
+
+        top_bar = QHBoxLayout()
+        top_bar.addWidget(self.home_button)
+        top_bar.addWidget(title)
+        top_bar.addStretch()
+        top_bar.addWidget(self.add_button)
+
+        # ---------- รายการเพลง + ข้อมูลเพลง ----------
         self.list_widget = QListWidget()
+        self.list_widget.setObjectName("Playlist")
         self.list_widget.itemDoubleClicked.connect(self.on_item_double_clicked)
 
         self.now_playing = QLabel("ยังไม่มีเพลงเล่นอยู่")
+        self.now_playing.setObjectName("InfoPanel")
         self.now_playing.setWordWrap(True)
-        self.now_playing.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.now_playing.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        top = QHBoxLayout()
-        top.addWidget(self.list_widget, 2)
-        top.addWidget(self.now_playing, 1)
+        content = QHBoxLayout()
+        content.setSpacing(14)
+        content.addWidget(self.list_widget, 2)
+        content.addWidget(self.now_playing, 3)
+
+        # ---------- เวลา + progress ----------
+        self.time_current = QLabel("0:00")
+        self.time_current.setObjectName("TimeLabel")
+        self.time_total = QLabel("0:00")
+        self.time_total.setObjectName("TimeLabel")
+
+        time_row = QHBoxLayout()
+        time_row.addWidget(self.time_current)
+        time_row.addStretch()
+        time_row.addWidget(self.time_total)
 
         self.progress = QSlider(Qt.Orientation.Horizontal)
+        self.progress.setObjectName("Progress")
         self.progress.sliderMoved.connect(self.player.setPosition)  # sliderMoved = ผู้ใช้ลากเท่านั้น
         self.player.durationChanged.connect(self.on_duration_changed)
         self.player.positionChanged.connect(self.on_position_changed)
 
-        self.time_label = QLabel("0:00 / 0:00")
-
-        progress_row = QHBoxLayout()
-        progress_row.addWidget(self.progress)
-        progress_row.addWidget(self.time_label)
-
-        buttons = QHBoxLayout()
-        for text, slot in (
-            ("Add Songs", self.on_add_songs),
-            ("Play", self.on_play),
-            ("Pause", self.on_pause),
-            ("Stop", self.on_stop),
+        # ---------- ปุ่มควบคุม + volume ----------
+        transport = QHBoxLayout()
+        transport.addSpacing(160)  # ponytail: ถ่วงซ้ายให้ปุ่มอยู่กลางจริง เพราะขวามี volume กินที่
+        transport.addStretch()
+        for glyph, tooltip, slot, name in (
+            ("◀◀", "เพลงก่อนหน้า", self.on_prev, "Transport"),
+            ("▶", "เล่น", self.on_play, "PlayButton"),
+            ("❚❚", "หยุดชั่วคราว", self.on_pause, "Transport"),
+            ("■", "หยุด", self.on_stop, "Transport"),
+            ("▶▶", "เพลงถัดไป", self.on_next, "Transport"),
         ):
-            button = QPushButton(text)
+            button = QPushButton(glyph)
+            button.setObjectName(name)
+            button.setToolTip(tooltip)
             button.clicked.connect(slot)
-            buttons.addWidget(button)
+            transport.addWidget(button)
+        transport.addStretch()
 
-        buttons.addStretch()
-        buttons.addWidget(QLabel("Volume"))
+        volume_icon = QLabel(chr(0xE767))  # ไอคอนลำโพง Segoe MDL2 Assets
+        volume_icon.setObjectName("VolumeIcon")
         self.volume_slider = QSlider(Qt.Orientation.Horizontal)
+        self.volume_slider.setObjectName("Volume")
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
         self.volume_slider.setFixedWidth(120)
         self.volume_slider.valueChanged.connect(self.on_volume_changed)
-        buttons.addWidget(self.volume_slider)
+        transport.addWidget(volume_icon)
+        transport.addWidget(self.volume_slider)
 
         root = QVBoxLayout()
-        root.addLayout(top)
-        root.addLayout(progress_row)
-        root.addLayout(buttons)
+        root.setContentsMargins(18, 16, 18, 16)
+        root.setSpacing(12)
+        root.addLayout(top_bar)
+        root.addLayout(content, 1)
+        root.addLayout(time_row)
+        root.addWidget(self.progress)
+        root.addLayout(transport)
 
         central = QWidget()
         central.setLayout(root)
@@ -120,6 +164,18 @@ class MainWindow(QMainWindow):
 
         self._play_index(self.playlist.current if self.playlist.current >= 0 else 0)
 
+    def on_pause(self):
+        self.player.pause()
+
+    def on_stop(self):
+        self.player.stop()
+
+    def on_prev(self):
+        self._play_index(self.playlist.current - 1)  # index ไม่ถูกต้อง -> _play_index เมิน
+
+    def on_next(self):
+        self._play_index(self.playlist.current + 1)
+
     def on_duration_changed(self, duration):
         self.progress.setRange(0, duration)
         self._update_time()
@@ -130,17 +186,12 @@ class MainWindow(QMainWindow):
         self._update_time()
 
     def _update_time(self):
-        self.time_label.setText(f"{_fmt(self.player.position())} / {_fmt(self.player.duration())}")
+        self.time_current.setText(_fmt(self.player.position()))
+        self.time_total.setText(_fmt(self.player.duration()))
 
     def on_volume_changed(self, value):
         # ponytail: linear พอสำหรับตอนนี้ อยากได้สเกลตามหูค่อยใช้ QtAudio.convertVolume
         self.audio_output.setVolume(value / 100)
-
-    def on_pause(self):
-        self.player.pause()
-
-    def on_stop(self):
-        self.player.stop()
 
     def _play_index(self, index):
         item = self.list_widget.item(index)
@@ -157,7 +208,7 @@ class MainWindow(QMainWindow):
         self.list_widget.setCurrentRow(index)
         self.player.setSource(QUrl.fromLocalFile(path))  # fromLocalFile: กัน "C:" โดนอ่านเป็น URL scheme
         self.player.play()
-        self.now_playing.setText(f"กำลังเล่น:\n{os.path.basename(path)}")
+        self.now_playing.setText(f"กำลังเล่น\n\n{os.path.basename(path)}")
 
     def on_player_error(self, error, error_string):
         if error == QMediaPlayer.Error.NoError:
@@ -168,6 +219,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet(theme.stylesheet())
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
