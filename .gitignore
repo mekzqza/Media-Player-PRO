@@ -1,4 +1,6 @@
 .venv/
+playlists.json
+playlists.json.bak
 __pycache__/
 build/
 dist/
